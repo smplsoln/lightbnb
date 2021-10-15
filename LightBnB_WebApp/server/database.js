@@ -19,28 +19,70 @@ const pool = new Pool({
  * @param {String} email The email of the user.
  * @return {Promise<{}>} A promise to the user.
  */
+// const getUserWithEmailDummy = function(email) {
+//   let user;
+//   for (const userId in users) {
+//     user = users[userId];
+//     if (user.email.toLowerCase() === email.toLowerCase()) {
+//       break;
+//     } else {
+//       user = null;
+//     }
+//   }
+//   return Promise.resolve(user);
+// };
+
 const getUserWithEmail = function(email) {
+
   let user;
-  for (const userId in users) {
-    user = users[userId];
-    if (user.email.toLowerCase() === email.toLowerCase()) {
-      break;
-    } else {
-      user = null;
-    }
-  }
-  return Promise.resolve(user);
+  const userQuery = `
+  SELECT *
+  FROM users
+  WHERE users.email = $1
+  ;
+  `;
+
+  return pool.query(userQuery, [email])
+    .then((res) => {
+      const user = res.rows[0];
+      // console.log({user});
+      return user;
+    })
+    .catch(err => err.message);
 };
+
+
 exports.getUserWithEmail = getUserWithEmail;
+
+
 
 /**
  * Get a single user from the database given their id.
  * @param {string} id The id of the user.
  * @return {Promise<{}>} A promise to the user.
  */
+// const getUserWithId = function(id) {
+//   return Promise.resolve(users[id]);
+// };
 const getUserWithId = function(id) {
-  return Promise.resolve(users[id]);
-};;
+
+  let user;
+  const userQuery = `
+  SELECT *
+  FROM users
+  WHERE users.id = $1
+  ;
+  `;
+
+  return pool.query(userQuery, [id])
+    .then((res) => {
+      const user = res.rows[0];
+      // console.log({user});
+      return user;
+    })
+    .catch(err => err.message);
+};
+
 exports.getUserWithId = getUserWithId;
 
 
@@ -49,12 +91,34 @@ exports.getUserWithId = getUserWithId;
  * @param {{name: string, password: string, email: string}} user
  * @return {Promise<{}>} A promise to the user.
  */
+// const addUser =  function(user) {
+//   const userId = Object.keys(users).length + 1;
+//   user.id = userId;
+//   users[userId] = user;
+//   return Promise.resolve(user);
+// };
+
 const addUser =  function(user) {
-  const userId = Object.keys(users).length + 1;
-  user.id = userId;
-  users[userId] = user;
-  return Promise.resolve(user);
+  const email = user.email;
+  const name = user.name;
+  const password = user.password;
+
+  const addUserQuery = `
+  INSERT INTO users (name, email, password)
+  VALUES ($1, $2, $3)
+  RETURNING *;
+  `;
+
+  return pool.query(addUserQuery, [name, email, password])
+    .then((res) => {
+      console.log({res});
+      const user = res.rows[0];
+      console.log({user});
+      return user;
+    })
+    .catch((err) => err.message);
 };
+
 exports.addUser = addUser;
 
 /// Reservations
@@ -77,13 +141,13 @@ exports.getAllReservations = getAllReservations;
  * @param {*} limit The number of results to return.
  * @return {Promise<[{}]>}  A promise to the properties.
  */
-const getAllPropertiesDummy = function(options, limit = 10) {
-  const limitedProperties = {};
-  for (let i = 1; i <= limit; i++) {
-    limitedProperties[i] = properties[i];
-  }
-  return Promise.resolve(limitedProperties);
-};
+// const getAllPropertiesDummy = function(options, limit = 10) {
+//   const limitedProperties = {};
+//   for (let i = 1; i <= limit; i++) {
+//     limitedProperties[i] = properties[i];
+//   }
+//   return Promise.resolve(limitedProperties);
+// };
 
 const getAllProperties = (options, limit = 10) => {
 
@@ -97,7 +161,7 @@ const getAllProperties = (options, limit = 10) => {
   return pool
     .query(propsQuery, [ limit ])
     .then((result) => {
-      console.log(result.rows);
+      // console.log(result.rows);
       return result.rows;
     })
     .catch((err) => err.message);
