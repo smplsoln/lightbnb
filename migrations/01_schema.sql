@@ -19,9 +19,13 @@ CREATE TABLE users (
   id SERIAL PRIMARY KEY NOT NULL,
   name VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL,
-  password VARCHAR(255) NOT NULL
+  password VARCHAR(255) NOT NULL,
+  -- ensure that no 2 users can have same email
+  UNIQUE(email)
   -- address_id INTEGER REFERENCES addresses(id) ON DELETE CASCADE
 );
+
+-- ALTER TABLE users ADD CONSTRAINT email_unique UNIQUE (email);
 
 CREATE TABLE properties (
   id SERIAL PRIMARY KEY NOT NULL,
